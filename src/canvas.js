@@ -16,7 +16,7 @@ class CanvasStream {
     }
   }
 
-  start(cb) {
+  start(done) {
     this.canvas = createCanvas(this.options.width, this.options.height)
     this.ctx = this.canvas.getContext('2d')
     this.startTime = Date.now()
@@ -27,7 +27,7 @@ class CanvasStream {
       this.draw()
     }, 1000 / this.options.fps)
 
-    cb()
+    done()
   }
 
   async update() {
