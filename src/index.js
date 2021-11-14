@@ -10,7 +10,7 @@ const CanvasStream = require('./canvas')
 const streamOptions = {
   width: 400,
   height: 300,
-  fps: 5,
+  fps: 15,
   outputFile: path.join(__dirname, '../stream/output.png')
 }
 
@@ -37,6 +37,7 @@ app.get('/config', (req, res) => {
 app.get('/stream', (req, res) => {
   const stream = fs.createReadStream(streamOptions.outputFile)
   stream.on('open', () => stream.pipe(res))
+  stream.on('end', () => stream.close())
 })
 
 app.use((req, res) => {

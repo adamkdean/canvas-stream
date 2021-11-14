@@ -15,9 +15,15 @@
       height: 300px;
       border: 1px solid black;
     }
+    img#buffer {
+      display: none;
+    }
     p.config, p.status {
       font-family: Hack, monospace;
       color: #999;
+    }
+    p.config {
+      font-size: 0.8em;
     }
   </style>
 </head>
@@ -25,29 +31,51 @@
 
   <h1>Canvas Stream</h1>
   <img id="stream">
-  <p class="config"></p>
+  <img id="buffer">
   <p class="status"></p>
+  <p class="config"></p>
 
   <script>
+    let count = 0
+
+    // Preload elements for easy access
+    const bufferElement = document.getElementById('buffer')
+    const streamElement = document.getElementById('stream')
+    const configElement = document.querySelector('.config')
+    const statusElement = document.querySelector('.status')
+
+    // Fetch latest image from server
     function fetch(src) {
       src = `${src}?ts=${Date.now()}`
-      document.querySelector('.status').innerText = `Fetching ${src}...`
-      document.getElementById('stream').src = src
+      statusElement.innerText = `Fetching ${src} (${count++})`
+      bufferElement.src = src
     }
 
-    const config = new XMLHttpRequest()
-    config.open('GET', '/config', true)
-    config.onload = () => {
-      if (config.status == 200) {
-        const data = JSON.parse(config.responseText)
-        document.querySelector('.config').innerText = config.responseText
-        fetch(data.stream)
-        setInterval(() => fetch(data.stream), data.streamInterval)
-      } else {
-        document.querySelector('.status').innerText = `Error getting config`
+    // Get config from server
+    function getConfig(done) {
+      const config = new XMLHttpRequest()
+      config.open('GET', '/config', true)
+      config.onload = () => {
+        if (config.status == 200) done(null, JSON.parse(config.responseText))
+        else done(`${config.status} ${config.responseText}`)
       }
+      config.send()
     }
-    config.send()
+
+    // Once buffer loads switch src of stream img
+    bufferElement.onload = () => {
+      streamElement.src = bufferElement.src
+      bufferElement.src = ''
+    }
+
+    // Get config from server and then initialise stream
+    getConfig((err, config) => {
+      if (err) return status.innerText = `Error getting config: ${err}`
+
+      fetch(config.stream)
+      setInterval(() => fetch(config.stream), config.streamInterval)
+      configElement.innerText = JSON.stringify(config)
+    })
   </script>
 
 </body>
