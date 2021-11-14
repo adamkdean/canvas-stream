@@ -1,6 +1,6 @@
-# canvas-to-video
+# canvas-stream
 
-This project seeks to generate pngs and serve them as a live video.
+This project seeks to generate pngs and effectively stream them over the web
 
 ## License
 
